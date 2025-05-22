@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ labels:
+   app: events-web
+ name: events-web
+spec:
+ replicas: 4
+ selector:
+   matchLabels:
+     app: events-web
+     ver: v1.0
+ template:
+   metadata:
+     labels:
+       app: events-web
+       ver: v1.0
+   spec:
+     containers:
+     - image: 895061075121.dkr.ecr.us-east-1.amazonaws.com/events-website:2.0
+       name: events-web
+       ports:
+       - containerPort: 8080
+       env:
+       - name: SERVER
+         value: "http://events-api-svc:8082"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: autoscale-app
+spec:
+  selector:
+    matchLabels:
+      app: autoscale
+      env: training
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: autoscale
+        env: training
+    spec:
+      containers:
+      - name: nodejs-loop
+        image: coursedemos/nodejs-loop:v1  # image in Dockerhub
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "100Mi"
+            cpu: "100m"
+          limits:
+            memory: "100Mi"
